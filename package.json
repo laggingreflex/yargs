@@ -61,13 +61,10 @@
   },
   "scripts": {
     "fix": "standardx --fix  && standardx --fix **/*.ts",
-    "posttest": "npm run check",
-    "test": "c8 mocha --require ./test/before.js --timeout=12000 --check-leaks",
+    "test": "mocha --require ./test/before.js --timeout=12000 --bail",
     "coverage": "c8 report --check-coverage",
     "check": "standardx && standardx **/*.ts",
-    "compile": "rimraf build && tsc -p .",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile"
+    "compile": "rimraf build && tsc -p . --watch"
   },
   "repository": {
     "type": "git",

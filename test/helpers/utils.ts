@@ -74,6 +74,8 @@ export function checkOutput<T> (
   function done (): CheckOutputResult<T> {
     reset()
 
+    require('fs').writeFileSync('output.log', require('util').formatWithOptions({ depth: 10 }, { errors, logs, warnings, exit, result }))
+
     return {
       errors,
       logs,
