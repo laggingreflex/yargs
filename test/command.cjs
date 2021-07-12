@@ -1813,7 +1813,7 @@ describe('Command', () => {
   });
 
   // see: https://github.com/yargs/yargs/issues/853
-  it('should not execute command if it is proceeded by another positional argument', () => {
+  it('should not execute command if it is preceded by another positional argument', () => {
     let commandCalled = false;
     yargs()
       .command('foo', 'foo command', noop, () => {
@@ -2064,6 +2064,62 @@ describe('Command', () => {
           output.should.include('a test command');
           argv.help.should.equal(true);
         });
+    });
+    // Refs: https://github.com/yargs/yargs/issues/1917
+    it('allows command to be defined in async builder', async () => {
+      let invoked = false;
+      await yargs('alpha beta')
+        .strict()
+        .command({
+          command: 'alpha',
+          describe: 'A',
+          builder: async yargs => {
+            await wait();
+            yargs
+              .command({
+                command: 'beta',
+                describe: 'B',
+                handler: () => {
+                  invoked = true;
+                },
+              })
+              .demandCommand(1);
+          },
+        })
+        .demandCommand(1)
+        .parse();
+      assert.strictEqual(invoked, true);
+    });
+    it('allows deeply nested command to be defined in async builder', async () => {
+      let invoked = false;
+      await yargs('alpha beta gamma')
+        .strict()
+        .command('alpha', 'A', async yargs => {
+          await wait();
+          yargs
+            .command({
+              command: 'beta',
+              describe: 'B',
+              builder: async yargs => {
+                await wait();
+                return yargs.command(
+                  'gamma',
+                  'C',
+                  async () => {
+                    await wait();
+                  },
+                  async () => {
+                    await wait();
+                    invoked = true;
+                  }
+                );
+              },
+            })
+            .demandCommand(1);
+        })
+        .demandCommand(1)
+        .parse();
+      assert.strictEqual(invoked, true);
     });
   });
 
